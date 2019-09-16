@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/bus_position"
+            android:checkable="true"
+            android:title="Where is my bus?"
+            />
+        <item android:id="@+id/schedule"
+            android:title="Scheduling"
+            android:checkable="true"/>
+        <item android:id="@+id/seting"
+            android:checkable="true"
+            android:title="Personal setting"/>
+        <item android:id="@+id/bill"
+            android:checkable="true"
+            android:title="My bill"/>
+    </group>
+</menu>
