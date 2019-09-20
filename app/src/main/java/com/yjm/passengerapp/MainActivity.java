@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -120,12 +121,15 @@ public class MainActivity  extends AppCompatActivity {
 
 //                    String token = response.getString('access_token');
                     try {
-                        JSONObject subObj = new JSONObject(String.valueOf(response));
-                        JSONObject json_data = subObj.getJSONObject("body");
-                        String token = json_data.getString("access_token");
-                        Constants.ACCESS_TOKEN = token;
 
-                    } catch (JSONException e) {
+
+//                        String token = response.body().get("access_token").toString();
+                        String token = response.body().get("access_token").getAsString();
+
+                        Constants.ACCESS_TOKEN = "bearer " + token;
+
+
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 

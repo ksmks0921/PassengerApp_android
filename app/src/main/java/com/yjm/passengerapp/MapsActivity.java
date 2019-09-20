@@ -419,7 +419,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         switch (menuItem.getItemId()){
             case R.id.bus_position:
 
-                Call<JsonObject> response_of_bus_location = apiInterface.getBusLocation();
+
+                Call<JsonObject> response_of_bus_location = apiInterface.getBusLocation(Constants.ACCESS_TOKEN);
                 response_of_bus_location.enqueue(new Callback<JsonObject>() {
 
                     @Override
@@ -427,19 +428,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         if(response.isSuccessful()){
 
                             try {
-                                JSONObject subObj = new JSONObject(String.valueOf(response));
-                                JSONObject json_data = subObj.getJSONObject("body");
-                                String location = json_data.getString("PassBusStatLocations");
 
-                                LatLng bus_latlng = new LatLng(32.1240017, 34.8397236000001);
-                                LatLng bus_station = new LatLng(39.1240017, 39.8397236000001);
+                                JsonObject subObj = response.body().getAsJsonObject("PassBusStatLocations");
+
+                                String BusLat =  subObj.get("BusLat").toString();
+                                String BusLong = subObj.get("BusLong").toString();
+                                String StationLat =  subObj.get("StationLat").toString();
+                                String StationLong = subObj.get("StationLong").toString();
+
+
+//                                LatLng bus_latlng = new LatLng(32.1240017, 34.8397236000001);
+//                                LatLng bus_station = new LatLng(39.1240017, 39.8397236000001);
+
+                                LatLng bus_latlng = new LatLng(Double.parseDouble(BusLat), Double.parseDouble(BusLong));
+                                LatLng bus_station = new LatLng(Double.parseDouble(StationLat), Double.parseDouble(StationLong));
 
 
                                 Constants.bus_location = bus_latlng;
                                 bus = true;
                                 UpdateMap();
 
-                            } catch (JSONException e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
 

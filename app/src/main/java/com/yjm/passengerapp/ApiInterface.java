@@ -11,11 +11,14 @@ import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Query;
+import com.yjm.passengerapp.util.Constants;
+
 
 public interface ApiInterface {
 
@@ -312,9 +315,10 @@ public interface ApiInterface {
     Call<JsonObject> verify(@Field("username") String userName, @Field("password") String userPassword, @Field("grant_type") String grantType);
 
     //getting bus location
+
     @GET("api/Passenger/getPassengerBusLocation")
-    @Headers({"Content-Type: application/json", "Authorization:bearer  Duij9Ewne_O9J71TMCdjUcUCJrZ2iREQwfDdL9j9PkTKyuRUMnyzVeRFmRjOWSOZt0U8tUyUUuc43w5ekOBAlYAPdKKPP8drJyxFG-WbAS05n1lqBW5VHClPMQaMGYEZCUa83B9EptJf5XP6jleIa4eM7651V2LJLfG8wqYhVueGGy-88spxKglcWvihXDoQsEEMGmNXLFlADLPWBpKuYG6PcLkwjpW3lnbFXPR4qmaUGgsmkYKNLbGDKu5DNQH7z6zcsSVfXGmzEQtteoFWzP9ZhA0uijECsNk4qIs1dDBvMEiFZagbR_hMffFfF_2A"  })
-    Call<JsonObject> getBusLocation();
+    @Headers({"Content-Type: application/json"})
+    Call<JsonObject> getBusLocation(@Header("Authorization") String token);
 
 
 
