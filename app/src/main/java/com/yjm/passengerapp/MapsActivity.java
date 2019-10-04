@@ -417,9 +417,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         closeDrawer();
 
         switch (menuItem.getItemId()){
+
             case R.id.bus_position:
 
-
+                Toast.makeText(MapsActivity.this, Constants.ACCESS_TOKEN , Toast.LENGTH_SHORT).show();
                 Call<JsonObject> response_of_bus_location = apiInterface.getBusLocation(Constants.ACCESS_TOKEN);
                 response_of_bus_location.enqueue(new Callback<JsonObject>() {
 
@@ -460,7 +461,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     @Override
                     public void onFailure(Call<JsonObject> call, Throwable t) {
-
+                        Toast.makeText(MapsActivity.this, Constants.ACCESS_TOKEN + "clicked", Toast.LENGTH_SHORT).show();
 
                     }
                 });
@@ -472,7 +473,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 break;
             case R.id.schedule:
-                Call<JsonObject> response_of_schedule = apiInterface.getShiftsofWeek();
+                Call<JsonObject> response_of_schedule = apiInterface.getShiftsofWeek(Constants.ACCESS_TOKEN);
                 response_of_schedule.enqueue(new Callback<JsonObject>() {
 
                     @Override

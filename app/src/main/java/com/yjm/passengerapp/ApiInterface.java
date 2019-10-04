@@ -3,6 +3,7 @@ import com.google.gson.JsonObject;
 import com.yjm.passengerapp.util.Constants;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -295,12 +296,12 @@ public interface ApiInterface {
 
     //get the passengerShift data
     @GET("api/Passenger/getPassengerShift")
-    @Headers({"Content-Type: application/json", "Authorization:bearer  Duij9Ewne_O9J71TMCdjUcUCJrZ2iREQwfDdL9j9PkTKyuRUMnyzVeRFmRjOWSOZt0U8tUyUUuc43w5ekOBAlYAPdKKPP8drJyxFG-WbAS05n1lqBW5VHClPMQaMGYEZCUa83B9EptJf5XP6jleIa4eM7651V2LJLfG8wqYhVueGGy-88spxKglcWvihXDoQsEEMGmNXLFlADLPWBpKuYG6PcLkwjpW3lnbFXPR4qmaUGgsmkYKNLbGDKu5DNQH7z6zcsSVfXGmzEQtteoFWzP9ZhA0uijECsNk4qIs1dDBvMEiFZagbR_hMffFfF_2A"})
-    Call<JsonObject> getShiftsofWeek();
+    @Headers({"Content-Type: application/json"})
+    Call<JsonObject> getShiftsofWeek(@Header("Authorization") String authorization);
 
     @GET("api/Passenger/getShiftOfDate?dt=2018-06-24")
-    @Headers({"Content-Type: application/json", "Authorization:bearer  Duij9Ewne_O9J71TMCdjUcUCJrZ2iREQwfDdL9j9PkTKyuRUMnyzVeRFmRjOWSOZt0U8tUyUUuc43w5ekOBAlYAPdKKPP8drJyxFG-WbAS05n1lqBW5VHClPMQaMGYEZCUa83B9EptJf5XP6jleIa4eM7651V2LJLfG8wqYhVueGGy-88spxKglcWvihXDoQsEEMGmNXLFlADLPWBpKuYG6PcLkwjpW3lnbFXPR4qmaUGgsmkYKNLbGDKu5DNQH7z6zcsSVfXGmzEQtteoFWzP9ZhA0uijECsNk4qIs1dDBvMEiFZagbR_hMffFfF_2A"})
-    Call<JsonObject> getShiftOfDate();
+    @Headers({"Content-Type: application/json"})
+    Call<JsonObject> getShiftOfDate(@Header("Authorization") String authorization);
 
     // login
     @FormUrlEncoded
@@ -316,9 +317,10 @@ public interface ApiInterface {
 
     //getting bus location
 
-    @GET("api/Passenger/getPassengerBusLocation")
+
     @Headers({"Content-Type: application/json"})
-    Call<JsonObject> getBusLocation(@Header("Authorization") String token);
+    @GET("api/Passenger/getPassengerBusLocation")
+    Call<JsonObject> getBusLocation(@Header("Authorization") String authorization);
 
 
 

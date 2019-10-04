@@ -69,7 +69,7 @@ public class scheduleActivity extends AppCompatActivity {
                         .addConverterFactory(GsonConverterFactory.create(gson))
                         .build();
                 apiInterface = retrofit.create(ApiInterface.class);
-                Call<JsonObject> data_getShiftofDate = apiInterface.getShiftOfDate();
+                Call<JsonObject> data_getShiftofDate = apiInterface.getShiftOfDate(Constants.ACCESS_TOKEN);
                 data_getShiftofDate.enqueue(new Callback<JsonObject>() {
                     @Override
                     public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {

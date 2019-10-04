@@ -8,7 +8,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Constants {
-    public static final String MAPVIEW_BUNDLE_KEY = "";
+    public static final String MAPVIEW_BUNDLE_KEY = "AIzaSyDe8-Nmqp28qLG7t_qvUvFEZ_cNVZlNkQs";
     public static final String BASE_URL = "http://23.239.215.199:2345/";
     public static Location currentLocation;
     public static LatLng bus_location;
