@@ -22,12 +22,15 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Layout;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -72,7 +75,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.internal.Util;
+
 import com.yjm.passengerapp.models.Schedule;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -104,7 +109,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static String ToTime_t;
     private static String ShiftDate_s;
     private static String ShiftDate_t;
-    MarkerOptions bus_place, busStop_place;
+    MarkerOptions bus_place, busStop_place, my_place;
     Polyline currentPolyline;
     Location currentLocation;
 
@@ -113,10 +118,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FusedLocationProviderClient fusedLocationClient;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
+    private long distance;
+    private long duration;
+
+    private TextView distance_text;
+    private TextView estTime_text;
+    private LinearLayout bottom_banner;
 
     public interface LocationUpdateCallback {
         void locationUpdateCallback();
     }
+
     public LocationUpdateCallback locationUpdateCallback;
 
     @Override
@@ -151,84 +163,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onCreate(mapViewBundle);
         mapView.getMapAsync(this);
 
+//        //get location of bus and bus station from server
+//        bus_place = new MarkerOptions().position(new LatLng(27.658143, 85.3199503)).title("Bus Location").draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.bus));
+//        busStop_place =  new MarkerOptions().position(new LatLng(27.667491, 85.3208583)).title("Bus Location").draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.stop));
+//
+//        mMap.addMarker(bus_place);
+//        mMap.addMarker(busStop_place);
 
 
+//        List<LatLng> lstLatLngRoute = new ArrayList<>();
+//        lstLatLngRoute.add(new LatLng(27.658143, 85.3199503));
+//        lstLatLngRoute.add(new LatLng(27.667491, 85.3208583));
+//        zoomRoute(mMap, lstLatLngRoute);
+//        new FetchURL(this).execute(getUrl(bus_place.getPosition(), busStop_place.getPosition(), "driving"), "driving");
 
-        // Location
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        // create location request
-        locationRequest = new LocationRequest();
-        locationRequest.setInterval(3000);
-        locationRequest.setFastestInterval(3000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
-        @Override
-        public void onSuccess(Location location) {
-            final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-            {
-                Toast.makeText(MapsActivity.this, "Confirm location", Toast.LENGTH_LONG).show();
-
-            } else {
-                // Got last known location. In some rare situations this can be null.
-                if (location != null) {
-                    // Logic to handle location object
-                    currentLocation = location;
-                    LatLng ny = new LatLng(location.getLatitude(), location.getLongitude());
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ny, 12f));
-//                    Constants.currentLocation = currentLocation;
-//                    LatLng my_latLng = new LatLng(Constants.currentLocation.getLatitude(), Constants.currentLocation.getLongitude());
-//                    mMap.addMarker(new MarkerOptions().position(my_latLng).title("current location of me").draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.person)));
-//                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(my_latLng, 12f));
-                    //locationUpdateCallback.locationUpdateCallback();
-                } else {
-                    /*
-                    kprogresshud = KProgressHUD.create(HomeActivity.this)
-                            .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
-                            .setCancellable(true)
-                            .setAnimationSpeed(2)
-                            .setDimAmount(0.5f)
-                            .show();
-                            */
-                    Toast.makeText(MapsActivity.this, "Confirm location", Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-        });
-        locationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            Location location = locationResult.getLastLocation();
-            if (location != null) {
-                currentLocation = location;
-
-
-                Toast.makeText(MapsActivity.this, "Updating Map with 3s", Toast.LENGTH_LONG).show();
-                LatLng ny = new LatLng(location.getLatitude(), location.getLongitude());
-
-                    try {
-                        int width = 100;
-                        int height = 100;
-                        BitmapDrawable bitmapdraw = (BitmapDrawable)MapsActivity.this.getResources().getDrawable(R.drawable.person);
-                        Bitmap b = bitmapdraw.getBitmap();
-                        Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
-
-                        if (mPositionMarker != null) {
-                            mPositionMarker.remove();
-                            mPositionMarker = null;
-                        }
-                        mPositionMarker = mMap.addMarker(new MarkerOptions()
-                                .flat(true)
-                                .anchor(0.5f, 0.5f)
-                                .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
-                                .position(ny));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
+        UpdateMap();
     }
 
 
@@ -288,54 +237,39 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         buildGoogleApiClient();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
 
     }
 
-    public boolean checkUserLocationPermission()
-    {
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION))
-            {
+    public boolean checkUserLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Request_User_Location_Code);
-            }
-            else
-            {
+            } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Request_User_Location_Code);
             }
             return false;
-        }
-        else
-        {
+        } else {
             return true;
         }
     }
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        switch (requestCode)
-        {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
             case Request_User_Location_Code:
-                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-                    {
-                        if (googleApiClient == null)
-                        {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        if (googleApiClient == null) {
                             buildGoogleApiClient();
                         }
                         mMap.setMyLocationEnabled(true);
                     }
-                }
-                else
-                {
+                } else {
                     Toast.makeText(this, "Permission Denied....", Toast.LENGTH_SHORT).show();
                 }
                 return;
@@ -343,8 +277,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-
-    protected synchronized void buildGoogleApiClient(){
+    protected synchronized void buildGoogleApiClient() {
 
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -360,14 +293,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-
     @Override
-    public void onLocationChanged(Location location)
-    {
+    public void onLocationChanged(Location location) {
         lastLocation = location;
 
-        if(currentUserLocationMaker != null)
-        {
+        if (currentUserLocationMaker != null) {
             currentUserLocationMaker.remove();
         }
 
@@ -381,10 +311,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 //        mMap.animateCamera(CameraUpdateFactory.zoomBy(12));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,12f));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12f));
 
-        if(googleApiClient != null)
-        {
+        if (googleApiClient != null) {
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
         }
 
@@ -397,30 +326,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onConnected(@Nullable Bundle bundle){
+    public void onConnected(@Nullable Bundle bundle) {
 
 
     }
-    private void UpdateMap(){
+
+    private void UpdateMap() {
 
 
-
-        if (bus == true){
+        if (bus == true) {
             //27.658143, 85.3199503
             //27.667491, 85.3208583
-
+            my_place = new MarkerOptions().position(new LatLng(27.648143, 85.3299503)).title("Me").draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.person));
             bus_place = new MarkerOptions().position(new LatLng(27.658143, 85.3199503)).title("Bus Location").draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.bus));
-            busStop_place =  new MarkerOptions().position(new LatLng(27.667491, 85.3208583)).title("Bus Location").draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.stop));
+            busStop_place = new MarkerOptions().position(new LatLng(27.667491, 85.3208583)).title("Bus Stop Location").draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.stop));
 
             mMap.addMarker(bus_place);
             mMap.addMarker(busStop_place);
+            mMap.addMarker(my_place);
 
 
             List<LatLng> lstLatLngRoute = new ArrayList<>();
-            lstLatLngRoute.add(new LatLng(27.658143, 85.3199503));
+            lstLatLngRoute.add(new LatLng(27.648143, 85.3299503));
             lstLatLngRoute.add(new LatLng(27.667491, 85.3208583));
             zoomRoute(mMap, lstLatLngRoute);
-            new FetchURL(this).execute(getUrl(bus_place.getPosition(), busStop_place.getPosition(), "driving"), "driving");
+            new FetchURL(this).execute(getUrl(my_place.getPosition(), busStop_place.getPosition(), "driving"), "driving");
+
+
+//            new FetchURL(this).execute(getUrl(bus_place.getPosition(), busStop_place.getPosition(), "driving"), "driving");
 
 //            String url = getUrl(bus_place.getPosition(),busStop_place.getPosition(),"driving");
 
@@ -433,15 +366,141 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             bus = false;
 
 
+        } else {
+            // Location
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+            // create location request
+            locationRequest = new LocationRequest();
+            locationRequest.setInterval(3000);
+            locationRequest.setFastestInterval(3000);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        }
-        else {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            fusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                        Toast.makeText(MapsActivity.this, "Confirm location", Toast.LENGTH_LONG).show();
 
+                    } else {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            // Logic to handle location object
+                            currentLocation = location;
+                            LatLng ny = new LatLng(location.getLatitude(), location.getLongitude());
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ny, 12f));
+//                    Constants.currentLocation = currentLocation;
+//                    LatLng my_latLng = new LatLng(Constants.currentLocation.getLatitude(), Constants.currentLocation.getLongitude());
+//                    mMap.addMarker(new MarkerOptions().position(my_latLng).title("current location of me").draggable(true).icon(BitmapDescriptorFactory.fromResource(R.drawable.person)));
+//                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(my_latLng, 12f));
+                            //locationUpdateCallback.locationUpdateCallback();
+                        } else {
+                    /*
+                    kprogresshud = KProgressHUD.create(HomeActivity.this)
+                            .setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
+                            .setCancellable(true)
+                            .setAnimationSpeed(2)
+                            .setDimAmount(0.5f)
+                            .show();
+                            */
+                            Toast.makeText(MapsActivity.this, "Confirm location", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+            });
+            locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    Location location = locationResult.getLastLocation();
+                    if (location != null) {
+                        currentLocation = location;
+
+
+                        LatLng ny = new LatLng(location.getLatitude(), location.getLongitude());
+
+                        try {
+                            int width = 100;
+                            int height = 100;
+                            BitmapDrawable bitmapdraw = (BitmapDrawable)MapsActivity.this.getResources().getDrawable(R.drawable.person);
+                            Bitmap b = bitmapdraw.getBitmap();
+                            Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
+
+                            if (mPositionMarker != null) {
+                                mPositionMarker.remove();
+                                mPositionMarker = null;
+                            }
+                            mPositionMarker = mMap.addMarker(new MarkerOptions()
+                                    .flat(true)
+                                    .anchor(0.5f, 0.5f)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
+                                    .position(ny));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
         }
 
 
     }
+    private void getLocation(){
 
+        //                Call<JsonObject> response_of_bus_location = apiInterface.getBusLocation(Constants.ACCESS_TOKEN);
+//                response_of_bus_location.enqueue(new Callback<JsonObject>() {
+//
+//                    @Override
+//                    public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+//                        if(response.isSuccessful()){
+//
+//                            try {
+//
+//                                JsonObject subObj = response.body().getAsJsonObject("PassBusStatLocations");
+//
+//                                String BusLat =  subObj.get("BusLat").toString();
+//                                String BusLong = subObj.get("BusLong").toString();
+//                                String StationLat =  subObj.get("StationLat").toString();
+//                                String StationLong = subObj.get("StationLong").toString();
+//
+//
+////                                LatLng bus_latlng = new LatLng(32.1240017, 34.8397236000001);
+////                                LatLng bus_station = new LatLng(39.1240017, 39.8397236000001);
+//
+//                                LatLng bus_latlng = new LatLng(Double.parseDouble(BusLat), Double.parseDouble(BusLong));
+//                                LatLng bus_station = new LatLng(Double.parseDouble(StationLat), Double.parseDouble(StationLong));
+//
+//
+//                                Constants.bus_location = bus_latlng;
+//                                bus = true;
+//                                UpdateMap();
+//
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
+//
+//                        }
+//                        else {
+//
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onFailure(Call<JsonObject> call, Throwable t) {
+//                        Toast.makeText(MapsActivity.this, Constants.ACCESS_TOKEN + "clicked", Toast.LENGTH_SHORT).show();
+//
+//                    }
+//                });
+    }
     public void zoomRoute(GoogleMap googleMap, List<LatLng> lstLatLngRoute) {
         if (googleMap == null || lstLatLngRoute == null || lstLatLngRoute.isEmpty()) return;
         LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
@@ -508,50 +567,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.bus_position:
 
 //                Toast.makeText(MapsActivity.this, Constants.ACCESS_TOKEN , Toast.LENGTH_SHORT).show();
-//                Call<JsonObject> response_of_bus_location = apiInterface.getBusLocation(Constants.ACCESS_TOKEN);
-//                response_of_bus_location.enqueue(new Callback<JsonObject>() {
-//
-//                    @Override
-//                    public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-//                        if(response.isSuccessful()){
-//
-//                            try {
-//
-//                                JsonObject subObj = response.body().getAsJsonObject("PassBusStatLocations");
-//
-//                                String BusLat =  subObj.get("BusLat").toString();
-//                                String BusLong = subObj.get("BusLong").toString();
-//                                String StationLat =  subObj.get("StationLat").toString();
-//                                String StationLong = subObj.get("StationLong").toString();
-//
-//
-////                                LatLng bus_latlng = new LatLng(32.1240017, 34.8397236000001);
-////                                LatLng bus_station = new LatLng(39.1240017, 39.8397236000001);
-//
-//                                LatLng bus_latlng = new LatLng(Double.parseDouble(BusLat), Double.parseDouble(BusLong));
-//                                LatLng bus_station = new LatLng(Double.parseDouble(StationLat), Double.parseDouble(StationLong));
-//
-//
-//                                Constants.bus_location = bus_latlng;
-//                                bus = true;
-//                                UpdateMap();
-//
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//
-//                        }
-//                        else {
-//
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onFailure(Call<JsonObject> call, Throwable t) {
-//                        Toast.makeText(MapsActivity.this, Constants.ACCESS_TOKEN + "clicked", Toast.LENGTH_SHORT).show();
-//
-//                    }
-//                });
+
 
                 bus = true;
                 UpdateMap();
@@ -639,9 +655,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onTaskDone(Object... values) {
+    public void onTaskDone(long distanceVal, long durationVal, Object... values) {
         if (currentPolyline != null)
             currentPolyline.remove();
         currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
+
+        distance = distanceVal;
+        duration = durationVal;
+        distance_text = (TextView) findViewById(R.id.distance);
+        estTime_text = (TextView) findViewById(R.id.estTime);
+        bottom_banner = (LinearLayout) findViewById(R.id.display_data);
+        bottom_banner.setVisibility(View.VISIBLE);
+        distance_text.setText("Distance: " + String.valueOf(distance) + "m");
+        estTime_text.setText("Estimate Time: " + String.valueOf(Math.round(duration / 60)) + "min");
     }
 }

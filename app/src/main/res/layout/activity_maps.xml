@@ -18,6 +18,58 @@
         android:orientation="vertical">
         <include
             layout="@layout/toolbar_layout"/>
+        <LinearLayout
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:visibility="gone"
+            android:id="@+id/display_data"
+            android:layout_marginBottom="25dp"
+            android:orientation="horizontal"
+            android:weightSum="1"
+            android:background="@drawable/shape"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:paddingLeft="20dp"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Distance:"
+
+                    android:id="@+id/distance"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:paddingLeft="20dp"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Estimate Time:"
+                    android:id="@+id/estTime"/>
+            </LinearLayout>
+    </LinearLayout>
+
     </LinearLayout>
     <android.support.design.widget.NavigationView
         android:layout_width="wrap_content"
@@ -27,4 +79,5 @@
         app:menu="@menu/drawer_menu">
 
     </android.support.design.widget.NavigationView>
+
 </android.support.v4.widget.DrawerLayout>

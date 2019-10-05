@@ -1,5 +1,7 @@
 package com.yjm.passengerapp.directionHelper;
 
+import android.util.Log;
+
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -10,11 +12,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * Created by Vishal on 10/20/2018.
- */
+
 
 public class DataParser {
+    public long distance = 0;
+    public long duration = 0;
+
     public List<List<HashMap<String, String>>> parse(JSONObject jObject) {
 
         List<List<HashMap<String, String>>> routes = new ArrayList<>();
@@ -30,6 +33,11 @@ public class DataParser {
                 /** Traversing all legs */
                 for (int j = 0; j < jLegs.length(); j++) {
                     jSteps = ((JSONObject) jLegs.get(j)).getJSONArray("steps");
+
+                    JSONObject jDistance = ((JSONObject) jLegs.get(j)).getJSONObject("distance");
+                    distance = jDistance.getLong("value"); //meter
+                    JSONObject jDuration = ((JSONObject) jLegs.get(j)).getJSONObject("duration");
+                    duration = jDuration.getLong("value"); //second
 
                     /** Traversing all steps */
                     for (int k = 0; k < jSteps.length(); k++) {
@@ -91,6 +99,8 @@ public class DataParser {
                     (((double) lng / 1E5)));
             poly.add(p);
         }
+
+        //taskCallback.onTaskDone(distance, duration, lineOptions);
 
         return poly;
     }

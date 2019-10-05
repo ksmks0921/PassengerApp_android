@@ -14,13 +14,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * Created by Vishal on 10/20/2018.
- */
+
 
 public class PointsParser extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
     TaskLoadedCallback taskCallback;
     String directionMode = "driving";
+    long distance = 0, duration = 0;
 
     public PointsParser(Context mContext, String directionMode) {
         this.taskCallback = (TaskLoadedCallback) mContext;
@@ -42,6 +41,9 @@ public class PointsParser extends AsyncTask<String, Integer, List<List<HashMap<S
 
             // Starts parsing data
             routes = parser.parse(jObject);
+            distance = parser.distance;
+            duration = parser.duration;
+
             Log.d("mylog", "Executing routes");
             Log.d("mylog", routes.toString());
 
@@ -86,7 +88,7 @@ public class PointsParser extends AsyncTask<String, Integer, List<List<HashMap<S
         // Drawing polyline in the Google Map for the i-th route
         if (lineOptions != null) {
             //mMap.addPolyline(lineOptions);
-            taskCallback.onTaskDone(lineOptions);
+            taskCallback.onTaskDone(distance, duration, lineOptions);
 
         } else {
             Log.d("mylog", "without Polylines drawn");
